@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #faf8f5;
+  --paper-muted: #f0ebe4;
+  --surface: #ffffff;
+  --ink: #1a1a1a;
+  --ink-muted: #6b6560;
+  --border: #e8e2da;
+  --accent: #5c4033;
+  --accent-hover: #4a3329;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-muted: var(--paper-muted);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --font-sans: var(--font-ui);
+  --font-serif: var(--font-serif);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui), system-ui, sans-serif;
+}
+
+.font-editor {
+  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
+}
+
+.ProseMirror {
+  outline: none;
+  min-height: 60vh;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--ink-muted);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.ProseMirror h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.ProseMirror h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+}
+
+.ProseMirror p {
+  margin: 0.5rem 0;
+  line-height: 1.75;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.ProseMirror blockquote {
+  border-left: 3px solid var(--border);
+  margin: 0.75rem 0;
+  padding-left: 1rem;
+  color: var(--ink-muted);
+}
