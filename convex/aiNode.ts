@@ -1,5 +1,3 @@
-"use node";
-
 import { v } from "convex/values";
 import OpenAI from "openai";
 import { z } from "zod";
@@ -98,15 +96,25 @@ ${knowledgeBlock}`;
       apiKey: process.env.OPENAI_API_KEY,
     });
 
+    const messagesToOpenAI: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+      { role: "system", content: SYSTEM_PROMPT },
+    ];
+
+    if (context.systemInstructions) {
+      messagesToOpenAI.push({
+        role: "system",
+        content: `USER PROVIDED INSTRUCTIONS ON TONE AND STYLE:\n${context.systemInstructions}`
+      });
+    }
+
+    messagesToOpenAI.push({ role: "user", content: userContext });
+    messagesToOpenAI.push(...historyMessages);
+    messagesToOpenAI.push({ role: "user", content: message });
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userContext },
-        ...historyMessages,
-        { role: "user", content: message },
-      ],
+      messages: messagesToOpenAI,
     });
 
     const raw = completion.choices[0]?.message?.content ?? "{}";

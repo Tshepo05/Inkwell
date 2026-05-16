@@ -28,6 +28,7 @@ export const load = internalQuery({
     return {
       title: doc.title,
       content: doc.content,
+      systemInstructions: doc.systemInstructions,
       knowledge: knowledge.map((k) => ({
         title: k.title,
         content: k.content,
