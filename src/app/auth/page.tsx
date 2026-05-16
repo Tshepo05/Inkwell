@@ -73,7 +73,17 @@ export default function AuthPage() {
                 form.elements.namedItem("password") as HTMLInputElement
               ).value;
 
-              void signIn("password", { email, password, flow: step })
+              const extras: Record<string, string> = {};
+              if (step === "signUp") {
+                extras.firstName = (
+                  form.elements.namedItem("firstName") as HTMLInputElement
+                ).value;
+                extras.lastName = (
+                  form.elements.namedItem("lastName") as HTMLInputElement
+                ).value;
+              }
+
+              void signIn("password", { email, password, flow: step, ...extras })
                 .then((result) => {
                   if (result.redirect) {
                     // OAuth provider flow — navigate to external provider.
@@ -100,6 +110,22 @@ export default function AuthPage() {
                 });
             }}
           >
+            {step === "signUp" && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1.5 block text-sm text-ink-muted">
+                    First Name
+                  </label>
+                  <Input name="firstName" type="text" required />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm text-ink-muted">
+                    Last Name
+                  </label>
+                  <Input name="lastName" type="text" required />
+                </div>
+              </div>
+            )}
             <div>
               <label className="mb-1.5 block text-sm text-ink-muted">Email</label>
               <Input name="email" type="email" required autoComplete="email" />
