@@ -37,6 +37,8 @@ yarn-error.log*
 
 # convex local backend
 .convex/
+keys.txt
+convex.env
 
 # vercel
 .vercel

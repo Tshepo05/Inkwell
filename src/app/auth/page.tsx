@@ -2,16 +2,45 @@
 
 import Link from "next/link";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useState } from "react";
+import { useConvexAuth } from "convex/react";
+import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
+function formatAuthError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : "Authentication failed";
+  try {
+    const parsed = JSON.parse(raw) as { message?: string };
+    if (parsed.message) {
+      return formatAuthError(new Error(parsed.message));
+    }
+  } catch {
+    // not JSON
+  }
+  if (raw.includes("AuthProviderDiscoveryFailed")) {
+    return "Convex auth is offline. Run `npx convex dev` (or `npm run dev:all`) and wait until it says “Convex functions ready”, then try again.";
+  }
+  return raw;
+}
+
+function goToApp() {
+  // Full navigation so middleware and server layout read auth cookies reliably.
+  window.location.assign("/dashboard");
+}
+
 export default function AuthPage() {
   const { signIn } = useAuthActions();
+  const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
   const [step, setStep] = useState<"signIn" | "signUp">("signIn");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      goToApp();
+    }
+  }, [authLoading, isAuthenticated]);
 
   return (
     <div className="flex min-h-full flex-col">
@@ -33,12 +62,25 @@ export default function AuthPage() {
               event.preventDefault();
               setError(null);
               setLoading(true);
-              const formData = new FormData(event.currentTarget);
-              void signIn("password", formData)
-                .catch((err: unknown) => {
+              const form = event.currentTarget;
+              const email = (form.elements.namedItem("email") as HTMLInputElement)
+                .value;
+              const password = (
+                form.elements.namedItem("password") as HTMLInputElement
+              ).value;
+
+              void signIn("password", { email, password, flow: step })
+                .then((result) => {
+                  if (result.signingIn || result.redirect) {
+                    goToApp();
+                    return;
+                  }
                   setError(
-                    err instanceof Error ? err.message : "Authentication failed",
+                    "Account was created but sign-in did not finish. Try signing in with the same email and password.",
                   );
+                })
+                .catch((err: unknown) => {
+                  setError(formatAuthError(err));
                 })
                 .finally(() => setLoading(false));
             }}
@@ -61,7 +103,6 @@ export default function AuthPage() {
                 minLength={8}
               />
             </div>
-            <input name="flow" type="hidden" value={step} />
             {error && (
               <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
                 {error}

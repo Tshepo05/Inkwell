@@ -35,29 +35,71 @@ node generateKeys.mjs
 
 Copy `env.local.example` to `.env.local` if needed, then paste the `JWT_PRIVATE_KEY` and `JWKS` output into the Convex dashboard.
 
+Also set `SITE_URL` on your deployment (required for Convex Auth):
+
+```bash
+npx convex env set SITE_URL "http://localhost:3000"
+```
+
+Use your real app URL in production (for example `https://your-domain.com`).
+
 ### 4. Add OpenAI API key
 
-In the same Convex environment variables panel, add:
+**Local deployment** (recommended on Windows — avoids a harmless CLI crash on exit):
 
+```bash
+# Copy convex.env.example to convex.env, add your key, then:
+npx convex env set --from-file convex.env --force
 ```
-OPENAI_API_KEY=sk-...
+
+Use two arguments, not `KEY=value`:
+
+```bash
+npx convex env set OPENAI_API_KEY "sk-your-key-here"
 ```
+
+**Cloud deployment:** set `OPENAI_API_KEY` in the [Convex dashboard](https://dashboard.convex.dev) → Settings → Environment Variables.
+
+If you see `Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)` after `Successfully set ...`, the variable was still saved. Confirm with `npx convex env list`. Run `convex env` commands in a **separate** terminal from `npx convex dev`.
 
 ### 5. Run the app
 
-In one terminal:
+Convex Auth needs **both** the Convex backend and the Next.js app running. The backend serves HTTP routes on port `3211` (local); without it, sign-in fails with an auth provider discovery error.
+
+**Option A — one command:**
+
+```bash
+npm run dev:all
+```
+
+**Option B — two terminals:**
 
 ```bash
 npx convex dev
 ```
 
-In another:
-
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) (use `localhost`, not your LAN IP, so auth cookies work over HTTP in development).
+
+### Auth error: “Auth provider discovery of http://127.0.0.1:3211 failed”
+
+This means the **Convex HTTP server is not running** on port `3211`. Sign-in and sign-up need both:
+
+| Port | Service |
+|------|---------|
+| `3210` | Convex database / functions |
+| `3211` | Convex HTTP routes (Convex Auth OIDC) |
+
+Fix: start Convex before (or with) Next.js:
+
+```bash
+npm run dev:all
+```
+
+If you only run `npm run dev`, you must already have `npx convex dev` running in another terminal until you see **Convex functions ready!**
 
 ## Pages
 
