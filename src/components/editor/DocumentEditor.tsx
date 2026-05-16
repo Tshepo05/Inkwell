@@ -4,7 +4,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
-import { useCallback, useEffect, useImperativeHandle, forwardRef, useState } from "react";
+import { useCallback, useImperativeHandle, forwardRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { EditorToolbar } from "./EditorToolbar";
 import type { DocumentEdit } from "@/types/ai";
@@ -51,16 +51,6 @@ export const DocumentEditor = forwardRef<
       debouncedChange(JSON.stringify(ed.getJSON()));
     },
   });
-
-  useEffect(() => {
-    if (!editor) return;
-    const parsed = parseContent(initialContent);
-    const current = JSON.stringify(editor.getJSON());
-    const incoming = JSON.stringify(parsed);
-    if (current !== incoming) {
-      editor.commands.setContent(parsed, { emitUpdate: false });
-    }
-  }, [initialContent, editor]);
 
   const applyEdit = useCallback(
     (edit: DocumentEdit) => {

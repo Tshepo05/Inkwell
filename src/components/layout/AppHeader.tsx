@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth } from "convex/react";
 import { Button } from "@/components/ui/Button";
-
+import { AccountDropdown } from "./AccountDropdown";
 type AppHeaderProps = {
   showAuth?: boolean;
 };
@@ -20,24 +20,16 @@ export function AppHeader({ showAuth = true }: AppHeaderProps) {
           Inkwell
         </Link>
         {showAuth && (
-          <nav className="flex items-center gap-3">
+          <nav className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
                 <Link
                   href="/dashboard"
-                  className="text-sm text-ink-muted hover:text-ink"
+                  className="text-sm font-medium text-ink-muted transition-colors hover:text-ink"
                 >
                   Dashboard
                 </Link>
-                <Link
-                  href="/settings"
-                  className="text-sm text-ink-muted hover:text-ink"
-                >
-                  Settings
-                </Link>
-                <Button variant="ghost" onClick={() => void signOut()}>
-                  Sign out
-                </Button>
+                <AccountDropdown />
               </>
             ) : (
               <Link href="/auth">
