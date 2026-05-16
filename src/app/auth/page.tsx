@@ -29,6 +29,10 @@ function goToApp() {
   window.location.assign("/dashboard");
 }
 
+function goToOAuth(url: URL) {
+  window.location.assign(url.toString());
+}
+
 export default function AuthPage() {
   const { signIn } = useAuthActions();
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
@@ -71,18 +75,29 @@ export default function AuthPage() {
 
               void signIn("password", { email, password, flow: step })
                 .then((result) => {
-                  if (result.signingIn || result.redirect) {
-                    goToApp();
+                  if (result.redirect) {
+                    // OAuth provider flow — navigate to external provider.
+                    goToOAuth(result.redirect);
                     return;
                   }
+                  if (result.signingIn) {
+                    // Session is being established — keep loading spinner on.
+                    // The useEffect above will redirect to /dashboard once
+                    // isAuthenticated flips to true (after cookie is written).
+                    return;
+                  }
+                  // signingIn === false with no redirect is an unexpected state.
                   setError(
-                    "Account was created but sign-in did not finish. Try signing in with the same email and password.",
+                    step === "signUp"
+                      ? "Account created but sign-in did not complete. Please sign in with your new credentials."
+                      : "Sign-in did not complete. Please try again.",
                   );
+                  setLoading(false);
                 })
                 .catch((err: unknown) => {
                   setError(formatAuthError(err));
-                })
-                .finally(() => setLoading(false));
+                  setLoading(false);
+                });
             }}
           >
             <div>
