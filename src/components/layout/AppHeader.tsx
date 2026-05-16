@@ -29,6 +29,12 @@ export function AppHeader({ showAuth = true }: AppHeaderProps) {
                 >
                   Dashboard
                 </Link>
+                <Link
+                  href="/settings"
+                  className="text-sm text-ink-muted hover:text-ink"
+                >
+                  Settings
+                </Link>
                 <Button variant="ghost" onClick={() => void signOut()}>
                   Sign out
                 </Button>

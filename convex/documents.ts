@@ -51,14 +51,16 @@ export const update = mutation({
     documentId: v.id("documents"),
     title: v.optional(v.string()),
     content: v.optional(v.string()),
+    systemInstructions: v.optional(v.string()),
   },
-  handler: async (ctx, { documentId, title, content }) => {
+  handler: async (ctx, { documentId, title, content, systemInstructions }) => {
     await requireDocumentOwner(ctx, documentId);
-    const patch: { title?: string; content?: string; updatedAt: number } = {
+    const patch: { title?: string; content?: string; systemInstructions?: string; updatedAt: number } = {
       updatedAt: Date.now(),
     };
     if (title !== undefined) patch.title = title;
     if (content !== undefined) patch.content = content;
+    if (systemInstructions !== undefined) patch.systemInstructions = systemInstructions;
     await ctx.db.patch(documentId, patch);
   },
 });

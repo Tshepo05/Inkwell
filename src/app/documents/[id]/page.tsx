@@ -111,6 +111,8 @@ export default function DocumentPage() {
         <AiChatSidebar
           documentId={documentId}
           onDocumentEdit={handleDocumentEdit}
+          onGetSelection={() => editorRef.current?.getSelectedText()}
+          systemInstructions={document.systemInstructions}
         />
       </div>
     </div>

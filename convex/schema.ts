@@ -8,6 +8,7 @@ export default defineSchema({
     userId: v.id("users"),
     title: v.string(),
     content: v.string(),
+    systemInstructions: v.optional(v.string()),
     updatedAt: v.number(),
   }).index("by_user", ["userId", "updatedAt"]),
 

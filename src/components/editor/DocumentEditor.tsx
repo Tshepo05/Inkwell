@@ -3,7 +3,8 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useCallback, useEffect, useImperativeHandle, forwardRef } from "react";
+import TextAlign from "@tiptap/extension-text-align";
+import { useCallback, useEffect, useImperativeHandle, forwardRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { EditorToolbar } from "./EditorToolbar";
 import type { DocumentEdit } from "@/types/ai";
@@ -11,6 +12,7 @@ import type { DocumentEdit } from "@/types/ai";
 export type DocumentEditorHandle = {
   applyEdit: (edit: DocumentEdit) => void;
   getContent: () => string;
+  getSelectedText: () => string;
 };
 
 type DocumentEditorProps = {
@@ -22,6 +24,9 @@ export const DocumentEditor = forwardRef<
   DocumentEditorHandle,
   DocumentEditorProps
 >(function DocumentEditor({ initialContent, onContentChange }, ref) {
+  const [showScratchPad, setShowScratchPad] = useState(false);
+  const [scratchPadText, setScratchPadText] = useState("");
+
   const debouncedChange = useDebouncedCallback((json: string) => {
     onContentChange(json);
   }, 800);
@@ -29,6 +34,9 @@ export const DocumentEditor = forwardRef<
   const editor = useEditor({
     extensions: [
       StarterKit,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
       Placeholder.configure({
         placeholder: "Start writing…",
       }),
@@ -79,15 +87,38 @@ export const DocumentEditor = forwardRef<
       applyEdit,
       getContent: () =>
         editor ? JSON.stringify(editor.getJSON()) : initialContent,
+      getSelectedText: () => {
+        if (!editor) return "";
+        const { from, to } = editor.state.selection;
+        return editor.state.doc.textBetween(from, to, " ");
+      },
     }),
     [applyEdit, editor, initialContent],
   );
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-md">
-      <EditorToolbar editor={editor} />
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <EditorContent editor={editor} />
+      <EditorToolbar 
+        editor={editor} 
+        onToggleScratchPad={() => setShowScratchPad(!showScratchPad)}
+        scratchPadActive={showScratchPad}
+      />
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <EditorContent editor={editor} />
+        </div>
+        {showScratchPad && (
+          <div className="border-t border-border bg-paper-muted p-4">
+            <h3 className="mb-2 text-xs font-medium text-ink-muted uppercase tracking-wider">Scratch Pad</h3>
+            <textarea
+              className="w-full resize-y rounded-lg border border-border bg-surface p-3 text-sm text-ink shadow-inner outline-none focus:border-accent"
+              rows={4}
+              placeholder="Jot down quick thoughts, notes, or ideas here..."
+              value={scratchPadText}
+              onChange={(e) => setScratchPadText(e.target.value)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
